@@ -1,0 +1,97 @@
+{
+  "_comment": "DO NOT EDIT: FILE GENERATED AUTOMATICALLY BY PTERODACTYL PANEL - PTERODACTYL.IO",
+  "meta": {
+    "version": "PTDL_v2",
+    "update_url": null
+  },
+  "exported_at": "2026-11-16T12:00:00+00:00",
+  "name": "Python Bot (Optimized)",
+  "author": "manish@arixbyte.com",
+  "description": "A custom Python Egg optimized for discord.py bots. Supports GitHub auto-updating, requirements.txt auto-installation, and unbuffered logging.",
+  "features": null,
+  "docker_images": {
+    "docker_images": {
+    "ArixByte Custom 3.12": "ghcr.io/justyadav/arixbyte-python:3.12"
+  },
+  },
+  "file_denylist": [],
+  "startup": "if [[ -d .git ]] && [[ \"{{AUTO_UPDATE}}\" == \"1\" ]]; then git pull; fi; if [ -f /mnt/server/${REQUIREMENTS_FILE} ]; then pip install -U --prefix .local -r ${REQUIREMENTS_FILE}; fi; if [[ ! -z \"${PY_PACKAGES}\" ]]; then pip install -U --prefix .local ${PY_PACKAGES}; fi; /usr/local/bin/python -u /mnt/server/${STARTUP_FILE}",
+  "config": {
+    "files": "{}",
+    "startup": "{\n    \"done\": \"Logged in as\",\n    \"userInteraction\": []\n}",
+    "logs": "{\n    \"custom\": false,\n    \"location\": \"logs/latest.log\"\n}",
+    "stop": "^C"
+  },
+  "scripts": {
+    "installation": {
+      "script": "#!/bin/bash\napt update\napt install -y git python3 python3-pip\ncd /mnt/server\n\nif [ \"${USER_UPLOAD}\" == \"1\" ]; then\n  echo -e \"User upload set to true, skipping GitHub clone.\"\n  exit 0\nfi\n\nif [ -z \"${GIT_ADDRESS}\" ]; then\n  echo -e \"No GIT_ADDRESS provided, skipping clone.\"\n  exit 0\nfi\n\necho -e \"Cloning ${GIT_ADDRESS}...\"\ngit clone ${GIT_ADDRESS} .\n\nif [ ! -z \"${BRANCH}\" ]; then\n  echo -e \"Checking out branch ${BRANCH}...\"\n  git checkout ${BRANCH}\nfi\n\necho -e \"Installation Complete!\"",
+      "container": "ghcr.io/parkervcp/installers:debian",
+      "entrypoint": "bash"
+    }
+  },
+  "variables": [
+    {
+      "name": "Startup File",
+      "description": "The main file that starts the bot (e.g., bot.py, main.py).",
+      "env_variable": "STARTUP_FILE",
+      "default_value": "main.py",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|string"
+    },
+    {
+      "name": "Requirements File",
+      "description": "The file containing your Python dependencies.",
+      "env_variable": "REQUIREMENTS_FILE",
+      "default_value": "requirements.txt",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|string"
+    },
+    {
+      "name": "Auto Update",
+      "description": "Pull the latest files from your GitHub repository on startup. (1 = true, 0 = false)",
+      "env_variable": "AUTO_UPDATE",
+      "default_value": "0",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|boolean"
+    },
+    {
+      "name": "Git Repo Address",
+      "description": "GitHub repository to clone (e.g., https://github.com/justyadav/Shreecloud-Bot.git). Leave blank if using SFTP.",
+      "env_variable": "GIT_ADDRESS",
+      "default_value": "",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "nullable|string"
+    },
+    {
+      "name": "Git Branch",
+      "description": "What branch to pull from GitHub.",
+      "env_variable": "BRANCH",
+      "default_value": "main",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "nullable|string"
+    },
+    {
+      "name": "Additional Python Packages",
+      "description": "Extra packages to install via pip on startup, separated by spaces.",
+      "env_variable": "PY_PACKAGES",
+      "default_value": "",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "nullable|string"
+    },
+    {
+      "name": "User Uploaded Files",
+      "description": "Set to 1 if you are uploading files via SFTP/Panel instead of using Git clone.",
+      "env_variable": "USER_UPLOAD",
+      "default_value": "0",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|boolean"
+    }
+  ]
+}
